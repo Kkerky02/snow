@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServiceNow ITOM フルスタックアーキテクチャおよびデータガバナンス詳細技術報告書（編集可能版）</title>
+    <style>
+        :root {
+            --primary-color: #0f766e;
+            --primary-dark: #115e59;
+            --secondary-color: #14b8a6;
+            --text-main: #334155;
+            --text-light: #64748b;
+            --bg-main: #ffffff;
+            --bg-accent: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: var(--text-main);
+            background-color: #f1f5f9;
+            line-height: 1.75;
+        }
+
+        .container {
+            max-width: 1140px;
+            margin: 40px auto;
+            background: var(--bg-main);
+            padding: 50px 60px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        /* 上部ヘッダーバナー */
+        .header-banner {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff;
+            padding: 40px;
+            margin: -50px -60px 40px -60px;
+            border-radius: 12px 12px 0 0;
+            border-left: 8px solid var(--secondary-color);
+        }
+
+        .header-banner h1 {
+            margin: 0 0 15px 0;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .header-banner p {
+            margin: 0;
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        /* 目次ナビゲーション */
+        .toc-box {
+            background-color: var(--bg-accent);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 40px;
+        }
+
+        .toc-box h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #0f172a;
+            font-size: 16px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+
+        .toc-box ul {
+            margin: 0;
+            padding-left: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .toc-box li a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .toc-box li a:hover {
+            text-decoration: underline;
+        }
+
+        /* セクション見出しスタイル */
+        h2 {
+            font-size: 18px;
+            color: #0f172a;
+            border-left: 5px solid var(--primary-color);
+            padding-left: 12px;
+            margin-top: 45px;
+            margin-bottom: 20px;
+            background-color: var(--bg-accent);
+            padding-top: 8px;
+            padding-bottom: 8px;
+        }
+
+        h3 {
+            font-size: 15px;
+            color: #1e293b;
+            margin-top: 30px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 16px;
+            text-align: justify;
+        }
+
+        /* コールアウト（補足説明） */
+        .callout {
+            background-color: #f0fdfa;
+            border-left: 4px solid var(--secondary-color);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .callout h4 {
+            margin: 0 0 8px 0;
+            color: #0f766e;
+            font-size: 15px;
+        }
+
+        .callout p {
+            margin: 0;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        /* アラート・警告ボックス */
+        .callout-warning {
+            background-color: #fff7ed;
+            border-left: 4px solid #ea580c;
+        }
+        
+        .callout-warning h4 {
+            color: #c2410c;
+        }
+
+        /* テーブルスタイル */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 13.5px;
+        }
+
+        th {
+            background-color: #1e293b;
+            color: #ffffff;
+            font-weight: 600;
+            padding: 12px 14px;
+            text-align: left;
+            border: 1px solid #334155;
+        }
+
+        td {
+            padding: 12px 14px;
+            border: 1px solid var(--border-color);
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--bg-accent);
+        }
+
+        /* リスト */
+        ul, ol {
+            margin-top: 0;
+            margin-bottom: 16px;
+            padding-left: 25px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* フローチャート・コンポーネント */
+        .flow-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 30px 0;
+            background-color: var(--bg-accent);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .flow-node {
+            flex: 1;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 12.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .flow-node strong {
+            display: block;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 13.5px;
+        }
+
+        .flow-arrow {
+            padding: 0 12px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 16px;
+        }
+
+        .code-inline {
+            font-family: Consolas, Monaco, monospace;
+            background-color: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12.5px;
+            color: #0f172a;
+        }
+
+        .editable-badge {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: #0f172a;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            float: right;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- 上部ヘッダー -->
+        <div class="header-banner">
+            <span class="editable-badge">HTML編集可能テンプレート</span>
+            <h1>ServiceNow ITOM フルスタックアーキテクチャおよびデータガバナンス詳細技術報告書</h1>
+            <p>構成内容：手動設定を要する事前定義テーブル、自動生成される動的CIテーブル、リレーションシップ構築ロジック、実行プロセスライフサイクル、認証情報なしスキャンの境界分析</p>
+        </div>
+
+        <!-- 編集説明コールアウト -->
+        <div class="callout">
+            <h4>📄 本ドキュメントの編集について</h4>
+            <p>本ファイルは、すべてのデザインスタイルが内包された標準的なHTML5形式で構成されています。テキストエディタ（Notepad++、VS Code等）を使用してテキストの直接編集、テーブルフィールドの調整が可能です。また、ブラウザから内容を直接コピーしてWordやPowerPointに貼り付け、報告書やプレゼン資料として再編成することもできます。</p>
+        </div>
+
+        <!-- 目次ナビゲーション -->
+        <div class="toc-box">
+            <h3>ドキュメント目次（クリックで該当セクションへジャンプ）</h3>
+            <ul>
+                <li><a href="#section1">一、 手動設定テーブル詳細（インプット層とポリシー定義）</a></li>
+                <li><a href="#section2">二、 自動生成・動的更新テーブル（CMDBアセット層）</a></li>
+                <li><a href="#section3">三、 内部テーブルの関連ロジックとリレーションシップ構築</a></li>
+                <li><a href="#section4">四、 3大コアモジュールのライフサイクル実行プロセス</a></li>
+                <li><a href="#section5">五、 特殊エッジケース：内部アクセス権限がない場合のCIデータ差異</a></li>
+                <li><a href="#section6">六、 データの整合性とIREエンジンによるガバナンスのベストプラクティス</a></li>
+            </ul>
+        </div>
+
+        <!-- セクション 1 -->
+        <h2 id="section1">一、 手動設定テーブル詳細（インプット層とポリシー定義）</h2>
+        <p>ServiceNow ITOM環境を構築する際、データのインプット源およびフィルタリングポリシーは、管理者が手動で維持する基準テーブルに完全に依存します。これらの事前設定テーブルが欠落している場合、水平および垂直発見エンジンは正常に動作しません。以下は、実務において手動設定が不可欠なコアテーブル一覧です：</p>
+        
+        <h3>1.1 Discovery（ディスカバリ）事前設定テーブル</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">テーブル名 (Table Name)</th>
+                    <th style="width: 25%;">ラベル名 (Label)</th>
+                    <th style="width: 50%;">手動設定が必要な主要フィールドおよび業務用途</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="code-inline">discovery_credentials</span></td>
+                    <td>Credentials</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">type</span>, <span class="code-inline">user_name</span>, <span class="code-inline">password</span>, <span class="code-inline">key</span><br><strong>用途：</strong> 対象OSにアクセスするためのSSH、WMI、SNMP、Windowsドメインアカウントなどの高権限認証情報を格納。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">discovery_schedule</span></td>
+                    <td>Discovery Schedules</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">discover</span>, <span class="code-inline">mid_server</span>, <span class="code-inline">run</span>（実行頻度）, <span class="code-inline">shazzam_batch_size</span><br><strong>用途：</strong> スキャンスケジュールを定義。実行頻度、指定されたMID Server、および対象のIPレンジを動的に紐付けます。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">discovery_range_item</span></td>
+                    <td>Discovery Range Items</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">type</span>(IP/Subnet), <span class="code-inline">start_ip_address</span>, <span class="code-inline">end_ip_address</span><br><strong>用途：</strong> MID Serverがプローブを発射する物理ネットワークの境界を手動で制限し、スキャン負荷が未承認領域に流出するのを防ぎます。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">discovery_port_probe</span></td>
+                    <td>Port Probes</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">port</span>, <span class="code-inline">protocol</span>, <span class="code-inline">scanner_class</span><br><strong>用途：</strong> Shazzamフェーズで検出する開放ポートを制限。22(SSH)、135(WMI)、161(SNMP)等のスキャンポリシーを手動変更。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">discovery_classy</span></td>
+                    <td>Discovery Classifications</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">match_criteria</span>, <span class="code-inline">table_to_create</span>, <span class="code-inline">probes_to_trigger</span><br><strong>用途：</strong> 分類器ルール。特定のポートが応答した際、対象システムがWindows、Linux、ルータのいずれであるかを判定。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h3>1.2 Service Mapping（サービスマッピング）＆ Event Management（イベント管理）事前設定テーブル</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">テーブル名 (Table Name)</th>
+                    <th style="width: 25%;">ラベル名 (Label)</th>
+                    <th style="width: 50%;">手動設定が必要な主要フィールドおよび業務用途</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="code-inline">sa_m2m_service_entry_point</span></td>
+                    <td>Service Entry Points</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">application_service</span>, <span class="code-inline">entry_point</span>(URL/IPポート)<br><strong>用途：</strong> 垂直トップダウンマッピングの起点。ビジネスサービスの「入り口」（例：本番環境Webサイトのロードバランサ仮想IPとポート）を手動で入力します。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">em_connector_instance</span></td>
+                    <td>Connector Instances</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">connector_definition</span>(Zabbix/Prometheus等), <span class="code-inline">host</span>, <span class="code-inline">credentials</span><br><strong>用途：</strong> 外部監視システムとの標準統合インターフェースを手動設定し、イベントがServiceNowに流入するための技術パイプラインを確立。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">em_event_rule</span></td>
+                    <td>Event Rules</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">event_mapping</span>, <span class="code-inline">transform_compose</span>, <span class="code-inline">filter</span><br><strong>用途：</strong> 非常に重要なデータクレンジングルール。未加工のテキストイベントを解析し、ホスト名や重要度を抽出して不要なノイズを排除するルールを手動構成。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">em_binding_rule</span></td>
+                    <td>Alert Binding Rules</td>
+                    <td><strong>主要フィールド：</strong> <span class="code-inline">ci_type</span>, <span class="code-inline">binding_strategy</span>, <span class="code-inline">match_attributes</span><br><strong>用途：</strong> 手動ポリシー設定。生成されたアラート（Alert）を、CMDB上の対応するサーバまたはアプリケーションインスタンスのノードに正確に紐付ける条件を定義。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- セクション 2 -->
+        <h2 id="section2">二、 自動生成・動的更新テーブル（CMDBアセット層）</h2>
+        <p>前述の事前設定テーブルが整いスキャンが実行されると、MID Serverが収集したペイロードがバックエンドのIRE（識別・統合エンジン）を通過し、CMDB内にインクリメンタル（差分）として自動作成されるか、既存CIの属性が上書き更新されます。以下のテーブルは完全にシステムによって自動管理されます：</p>
+        
+        <h3>2.1 インフラストラクチャおよびミドルウェアのCIテーブル（自動作成/更新）</h3>
+        <ul>
+            <li><strong><span class="code-inline">cmdb_ci_server</span>（サーバ総合テーブル）：</strong> すべての物理マシン、仮想マシンのコアOS属性（ホスト名、ドメイン名、OSバージョン、製造シリアル番号など）を格納（子テーブルの <span class="code-inline">cmdb_ci_win_server</span> や <span class="code-inline">cmdb_ci_linux_server</span> へ派生）。</li>
+            <li><strong><span class="code-inline">cmdb_ci_network_adapter</span>（ネットワークアダプタテーブル）：</strong> ネットワークカードの一覧を動的に生成し、各物理ポートのMACアドレス、バインドされたIPアドレス、サブネットマスクをリアルタイムで更新します。</li>
+            <li><strong><span class="code-inline">cmdb_ci_appl</span>（アプリケーション・ミドルウェアテーブル）：</strong> パターン（Pattern）のディープスキャンにより自動生成されるコンポーネントレコード。自動取得・更新される <span class="code-inline">Tomcat</span>、<span class="code-inline">MySQL</span>、<span class="code-inline">IIS</span> などのソフトウェアインスタンスが含まれます。</li>
+            <li><strong><span class="code-inline">cmdb_serial_number</span>（デバイスシリアル番号テーブル）：</strong> 1台のホストにメインボード、シャーシ、BIOSなどの複数のシリアル番号が存在する場合、それらを自動的に紐付け、IREエンジンがデバイスの一意性を識別するための重要キーとして機能させます。</li>
+        </ul>
+
+        <h3>2.2 監視およびアラート実行時動的テーブル（実行時自動生成）</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">テーブル名 (Table Name)</th>
+                    <th style="width: 25%;">ラベル名 (Label)</th>
+                    <th style="width: 50%;">自動生成・更新される動的な運用データの説明</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="code-inline">em_event</span></td>
+                    <td>Events</td>
+                    <td>外部監視ソースから絶え間なく送信される生の「イベントストリーム」。このテーブルはデータ量が非常に多くなるため、システムは定期的に古い履歴キャッシュを自動削除します。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">em_alert</span></td>
+                    <td>Alerts</td>
+                    <td>イベントが <span class="code-inline">em_event_rule</span> によるフィルタリングを経て生成された正式な「アラート」。システムはこれを影響を受けるCMDBのアセットノードに自動関連付けします。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">ecc_queue</span></td>
+                    <td>ECC Queue</td>
+                    <td>ITOM運用の非同期通信の心臓部。MID Serverへの指示（Output）と、MID Serverから返却されるスキャン結果（Input）が自動的に書き込まれます。</td>
+                </tr>
+                <tr>
+                    <td><span class="code-inline">discovery_status</span></td>
+                    <td>Discovery Status</td>
+                    <td>スキャンスケジュールが実行されるたびに自動生成されるコントロールレコード。今回のスキャンで新規作成されたCI数、更新された旧CI数を記録します。</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- セクション 3 -->
+        <h2 id="section3">三、 内部テーブルの关联ロジック与リレーションシップ構築 (Relationships)</h2>
+        <p>ServiceNow ITOMの真髄は、独立したアセット台帳だけでなく、これらの資産を自動的に紐付け、依存関係（血統網）を構築できる点にあります。以下の関連テーブルは、トポロジビューの核となる重要なデータ構造です：</p>
+
+        <h3>3.1 物理・論理的リレーションシップテーブル：<span class="code-inline">cmdb_rel_ci</span></h3>
+        <p>CMDBにおける関係性のコアテーブルです。標準的な <strong>Parent ➡️ Type ➡️ Child</strong> の三元配置構造をベースに、アセット間の物理的・論理的依存関係を自動的に記録します：</p>
+        <ul>
+            <li><strong>Runs on :: Used by：</strong> 例：`Tomcat@discoverytest` (Child) が `discoverytest` Windowsサーバ (Parent) 上で <strong>Runs on</strong>（稼働）している関係。</li>
+            <li><strong>Depends on :: Used by：</strong> ソフトウェアコンポーネント間の垂直方向のデータフローや依存関係。</li>
+            <li><strong>Virtualizes :: Virtualized by：</strong> 物理ホスト（ESXiホスト等）と、その上で稼働する複数の仮想マシン（VM）間の仮想化ホスト関係。</li>
+        </ul>
+
+        <h3>3.2 ビジネスサービスと資産の関連付けテーブル：<span class="code-inline">svc_ci_assoc</span></h3>
+        <p>このテーブルは、<strong>Tag-Based Mapping</strong> および <strong>Top-Down Mapping</strong> の最終成果が格納される場所です。物理的な接続ではなく、「論理的な帰属関係」を格納します：
+        <br><strong>コアロジック：</strong> 具体的な物理CIのSys_IDを、抽象的なアプリケーションサービスレコード（<span class="code-inline">cmdb_ci_service_discovered</span>）に直接マッピングします。このテーブルにデータが存在することで、マップ表示画面に対象アセットが表示されるようになります。
+        </p>
+
+        <!-- セクション 4 -->
+        <h2 id="section4">四、 3大コアモジュールのライフサイクル実行プロセス</h2>
+        <p>ITOMがシステム内でどのように「動的」に機能するかを解説するため、各モジュールの実行フローを直線的なステップで示します：</p>
+
+        <h3>4.1 水平ディスカバリ実行フロー (Horizontal Discovery)</h3>
+        <div class="flow-wrapper">
+            <div class="flow-node"><strong>1. Scan (ポートスキャン)</strong>指示がecc_queueに書き込まれ、MID ServerがIPレンジを走査。22/135/161等の開放ポート状態を返却。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>2. Classify (デバイス分類)</strong>分類器の条件マッチング。135ポートが応答した場合Windowsと判定し、適切なWMI認証情報を割り当て。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>3. Identify (IRE識別)</strong>IREエンジンを呼び出しシリアル番号やMACアドレスを読み取り。既存CIがあれば更新、なければ新規作成を判定。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>4. Explore (詳細探索)</strong>詳細パターンプローブを実行。OS内部のネットワークアダプタ、ディスク、インストールソフト、Tomcatプロセス等をCMDBへ同期。</div>
+        </div>
+
+        <h3>4.2 垂直サービスマッピング実行フロー (Service Mapping)</h3>
+        <div class="flow-wrapper">
+            <div class="flow-node"><strong>1. エントリポイント注入</strong>手動で <code>sa_m2m_service_entry_point</code> に技術的起点となるURL/IPを入力。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>2. ホストへのドリルダウン</strong>システムがURLのIPルーティングを自動解析し、対象アプリケーションが稼働している物理/仮想ホストCIを特定。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>3. プロセス・通信依存の抽出</strong><code>sa_pattern</code>を起動しTomcatの設定ファイルを解析。接続先となるMySQLデータベースのIPとポートを自動抽出。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>4. トポロジの確定</strong>解析された垂直の依存関係をすべて <code>cmdb_rel_ci</code> に書き込み、サービス全体の依存関係マップを完成。</div>
+        </div>
+
+        <h3>4.3 イベント管理のノイズ抑制とバインディングフロー (Event Management)</h3>
+        <div class="flow-wrapper">
+            <div class="flow-node"><strong>1. イベントの流入</strong>外部監視ツール（Zabbix等）の未加工アラートテキストがコネクタ経由で <code>em_event</code> テーブルに流入。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>2. ルール適用と降噪</strong><code>em_event_rule</code>にマッチ。重複する大量のノイズを統合・除外して <code>em_alert</code> テーブルに単一のアラートとして集約。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>3. CIノードへのバインド</strong><code>em_binding_rule</code>にマッチ。アラート内のホスト名情報から、CMDB上の対応するサーバノードを正確に特定して紐付け。</div>
+            <div class="flow-arrow">➔</div>
+            <div class="flow-node"><strong>4. サービスへの影響可視化</strong>対象サーバがバインドされたことで、Service Mapping経由で上位のビジネスサービスが即座に赤く点滅。障害のブラストラジアスを特定。</div>
+        </div>
+
+        <!-- セクション 5 -->
+        <h2 id="section5">五、 特殊エッジケース：内部アクセス権限がない場合のCIデータ差異</h2>
+        <p>データガバナンスにおいて頻発するエッジケースとして、対象ネットワーク上の特定のWindows PCに対し、MID Serverからのネットワーク疎通（Ping等）は可能であるものの、<strong>内部アクセス権限がない</strong>（WMI認証情報が誤っている、またはファイアウォールで135ポート等の管理ポートが遮断されている）シナリオがあります。この場合、ディスカバリはClassify段階で熔断（処理停止）されます。</p>
+        
+        <div class="callout callout-warning">
+            <h4>🚨 認証情報・権限なし（熔断状態）におけるCMDBデータ差異の対照表：</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50%; background-color: #c2410c;">👁️ 外部からの観測：システムが【取得可能な】基礎データ</th>
+                        <th style="width: 50%; background-color: #9a3412;">🚫 アクセス拒否：システムが【取得不可能な】深度CIデータ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <ul>
+                                <li><strong><span class="code-inline">cmdb_ci_ip_address</span>（IPアドレスCI）：</strong> 100%作成または更新されます。ネットワーク層での疎通が確認できるためです。</li>
+                                <li><strong>開いているポートのアクティビティリスト：</strong> 135、445等の管理ポートが「Open」状態であるログ。</li>
+                                <li><strong>大まかなハードウェアの空殻：</strong> 135ポートの応答から、システムは一時的に <span class="code-inline">cmdb_ci_computer</span> または <i>Unclassed Hardware</i> テーブルに、IPアドレスを名前にした空のレコード（例：<code>10.10.1.55</code>）を作成します。</li>
+                                <li><strong>認証情報なしの指紋識別（任意）：</strong> Credential-less Discoveryが有効な場合、Nmapを利用して "Windows 10" や "Linux" 等のOS種別を推測しますが、あくまで推測の域を出ません。</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <ul>
+                                <li><strong><span class="code-inline">cmdb_serial_number</span>（製造シリアル番号）：</strong> ❌ 取得不可能です。BIOS情報を読み取るためのOS内部コマンドが実行できません。</li>
+                                <li><strong>詳細なハードウェア構成：</strong> ❌ 取得不可能です。CPUコア数、ディスクパーティションサイズ（<span class="code-inline">cmdb_ci_disk</span>）、メモリ容量等は一切検知できません。</li>
+                                <li><strong>グローバルMACアドレス：</strong> ❌ 取得できません（対象デバイスがMID Serverと同一サブネットにあり、ARPブロードキャストで取得できる場合を除く）。</li>
+                                <li><strong>ミドルウェアおよびインストールパッケージ：</strong> ❌ 取得できません。レジストリやプロセスリストを読み取れないため、Tomcat等のノードは生成されず、<strong>Service Mappingはここで完全に断流（失敗）します</strong>。</li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- セクション 6 -->
+    <h2 id="section6">六、 データの整合性とIREエンジンによるガバナンスのベストプラクティス</h2>
+    <p>上記のような「認証情報なしの空殻アセット」がシリアル番号（Serial Number）やMACアドレスを持たない状態でCMDBに注入されると、運用上で深刻な問題を引き起こします。それが、<strong>大量の重複CI（Duplicates）の発生</strong>です。</p>
+    <p><strong>重複発生のメカニズム：</strong> ServiceNowのバックエンドに位置するIRE（識別・統合エンジン）は、新規スキャンされたデバイスが既存アセットであるかを判断する際、第一優先としてシリアル番号、第二優先としてMACアドレスを照合します。これらが権限不足により取得できない場合、IREは最終的に最も信頼性の低い属性である <strong>IPアドレス</strong> でのマッチングを試みます。もし対象PCがDHCP環境にあり、翌日IPアドレスが変更された場合、IREはそれを「新しい別のコンピュータ」と誤認してCMDBに新たな空殻CIを作成してしまい、台帳が乱れる原因となります。</p>
+
+    <h3>💡 このシナリオに対する技術ガバナンスのベストプラクティス：</h3>
+    <ol>
+        <li><strong>リモート・モバイル端末への対応：</strong> IPベースの無源ネットワークスキャンを廃止し、<strong>Agent Client Collector (ACC)</strong> メカニズムへ切り替えます。端末にACC軽量エージェントを導入することで、社内防火壁やネットワーク認証情報の制限を完全にバイパスし、端末側から能動的に完全なデータを安全に送信させます。</li>
+        <li><strong>クラウド上のシャドーITへの対応：</strong> IPスキャンを廃止し、標準の <strong>Cloud Discovery（API統合方式）</strong> を全面採用します。AzureやAWSの管理プレーンAPIから直接インベントリ情報とタグ（Tag）の情報を取得し、未承認の「ゴーストCI」の発生を源流で封じ込めます。</li>
+        <li><strong>識別ルールの調整 (<span class="code-inline">cmdb_identifier</span>)：</strong> PCクラスや未分類ハードウェアクラスに対して独立したフィルタリングルールを設定し、シリアル番号とMACアドレスが同時に空である場合は、IREによるCMDB主表への書き込みを直接拒否して「要監査スタギング領域」へ隔離し、クリーンなCI環境を維持します。</li>
+    </ol>
+
+    <p style="text-align: center; margin-top: 50px; font-weight: bold; color: var(--text-light);">
+        — 技術報告書は以上です。本HTMLの内容は自由に編集・再構成して報告資料等にご活用いただけます —
+    </p>
+</div>
+
+</body>
+</html>
