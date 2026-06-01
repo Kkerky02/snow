@@ -1,43 +1,74 @@
-太棒了，把 **Tag-based Discovery（基于标签的探测）** 也加进汇报，能让你的 ITOM 方案显得非常现代化！
+yml
+# 1. 指向你的 MID Server 地址 (注意替换 IP/域名 和 端口)
+backend:
+  - url: "wss://<YOUR_MID_SERVER_IP_OR_FQDN>:<PORT>/ws/events"
 
-现在的企业云端环境（Azure/AWS）都在推行 **“Tag-first”** 战略，不依赖死板的端口和 IP，而是根据云资源上打的标签（如 `Environment: Prod`, `Application: Payment`）来自动组装 Application Service。这正对你的 Azure 项目背景。
+# 2. 从 ServiceNow 实例中生成的 ACC 注册密钥
+mid_secret: "<YOUR_REGISTRATION_KEY>"
 
-按照刚才那页 PPT 的严谨商业风格，我为你梳理了 **Tag-based Discovery** 的标准手顺文本。你可以直接用来做新的一页 PPT：
+# 3. (可选) 定义 Agent 的名称，如果不填通常默认使用主机名
+agent:
+  name: "<CUSTOM_AGENT_NAME>"
 
----
+选项 A：Windows 环境部署 (PowerShell 脚本)
+在同一目录下新建一个名为 Install-ACC.ps1 的文件，填入以下代码。右键使用 PowerShell 运行即可（需要管理员权限）：
+  # --- Windows ACC 静默安装脚本 ---
 
-### ※ タグベース Discovery のセットアップ手順
+# 请将此处替换为你实际下载的 MSI 文件名
+$InstallerName = "agent-client-collector-1.0.0.msi" 
 
-#### **前提条件 (Prerequisites)**
+$CurrentPath = Get-Location
+$MsiPath = Join-Path -Path $CurrentPath -ChildPath $InstallerName
+$YmlPath = Join-Path -Path $CurrentPath -ChildPath "acc.yml"
+$TargetYmlDir = "$env:ProgramData\ServiceNow\agent-client-collector\config"
 
-* **クラウド Discovery の完了**：Azure / AWS 等のクラウド環境から、リソース（VM、DB等）および **タグ（Tags）** のデータが CMDB に正しく同期されていること。
-* **CI タグカテゴリ（CI Tag Categories）** の定義：ServiceNow 内でマッピングに使用するタグキー（例：`App`, `Env`）が有効化されていること。
+Write-Host "1. 正在静默安装 ServiceNow ACC..."
+# /i 安装, /qn 无界面静默模式, /norestart 不自动重启
+Start-Process -FilePath "msiexec.exe" -ArgumentList "/i `"$MsiPath`" /qn /norestart" -Wait -NoNewWindow
 
-#### **1. タグベース・サービス作成ルールの設定**
+Write-Host "2. 正在覆盖自定义的 acc.yml 配置文件..."
+if (Test-Path $YmlPath) {
+    Copy-Item -Path $YmlPath -Destination "$TargetYmlDir\acc.yml" -Force
+    Write-Host "配置文件替换成功！"
+} else {
+    Write-Warning "未在当前目录找到 acc.yml，请检查！"
+}
 
-* `Service Mapping > Tag-Based Service Mapping >展型ルール`（或者本地化菜单名：`Service Creation Rules`）モジュールへ移動し、新規登録。
-1. **ルール名** の入力と、対象となる **CI分類 (CI Class)** の指定
-2. サービスをグループ化するための **タグキー（例：`Application` ＋ `Environment`）** の組み合わせを選択
+Write-Host "3. 正在重启 ACC 服务以应用新配置..."
+Restart-Service -Name "acc" -Force
+
+Write-Host "部署完成！请前往 ServiceNow 实例检查 Agent 是否已上线。"
 
 
 
-#### **2. アプリケーションサービスの自動生成と確認**
 
-* ルールを保存後、**「Create/Update Services」** を実行。
-* システムが CMDB 内のタグをスキャンし、同じタグ値を持つリソースを自動的に1つの **Application Service** としてまとめます。
-* **「View Map」** を開き、タグによって動的に構成されたトポロジーマップ（下図）を確認。
+选项 B：Linux (RedHat/CentOS) 环境部署 (Shell 脚本)
+在同一目录下新建一个名为 install_acc.sh 的文件，填入以下代码。给予执行权限 (chmod +x install_acc.sh) 后，使用 sudo 执行：
 
-💡 *ワンポイント：タグベース方式では、手動でエントリーポイントを入力する必要はありません。後からクラウド側に同じタグを持つ新規VMを追加すると、マップにも自動で反映されます。*
+#!/bin/bash
+# --- Linux ACC 静默安装脚本 ---
 
----
+# 请将此处替换为你实际下载的 rpm 文件名
+INSTALLER_FILE="agent-client-collector-1.0.0.rpm"
+CUSTOM_YML="acc.yml"
+TARGET_YML_PATH="/etc/servicenow/acc/acc.yml"
 
-### 💡 汇报时的“加分”对比（可以做成小表格放到 PPT 侧边）
+echo "1. 正在静默安装 ServiceNow ACC..."
+sudo rpm -ivh $INSTALLER_FILE
 
-如果在汇报时，你能把 **Entry Point**（你上一页写的）和 **Tag-based**（这一页写的）做个对比，老板会觉得你对 ITOM 的理解非常透彻：
+echo "2. 正在覆盖自定义的 acc.yml 配置文件..."
+if [ -f "$CUSTOM_YML" ]; then
+    sudo cp $CUSTOM_YML $TARGET_YML_PATH
+    # 确保 ServiceNow 账号有权限读取该文件
+    sudo chown servicenow:servicenow $TARGET_YML_PATH
+    sudo chmod 640 $TARGET_YML_PATH
+    echo "配置文件替换成功！"
+else
+    echo "警告: 未在当前目录找到 acc.yml！"
+fi
 
-| 区分 | Entry Point 方式 (Top-down) | Tag-based 方式 |
-| --- | --- | --- |
-| **アプローチ** | ネットワークポート・プロセス接続ベース | クラウド上の **メタデータ（タグ）** ベース |
-| **手間の少なさ** | 接続エラー（3306等）のデバッグが必要 | タグさえ正しく運用されていれば**一瞬で自動生成** |
-| **最適環境** | オンプレミス（社内サーバー）、固定インフラ | **マルチクラウド（Azure / AWS）**、コンテナ環境 |
+echo "3. 正在启动并设置 ACC 服务开机自启..."
+sudo systemctl enable acc
+sudo systemctl restart acc
 
+echo "部署完成！请前往 ServiceNow 实例检查 Agent 是否已上线。"
