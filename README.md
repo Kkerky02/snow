@@ -10,3 +10,16 @@ AWS(亚马逊云),1. 凭证要求：IAM User (Access Key ID & Secret) 或 IAM Ro
 Azure(微软云),"1. 凭证要求：App Registration (应用注册/服务主体)，需获取 Client ID, Tenant ID 和 Client Secret。2. 权限策略：在目标 Subscription (订阅) 或 Management Group (管理组) 级别，赋予 Reader (读取者) 角色。3. 网络要求：确保 MID Server 能访问 Azure API 终结点。","Virtual Machines, VNet, Resource Group, Storage Account, Azure SQL。"
 GCP(谷歌云),"1. 凭证要求：Service Account (服务账号)，必须生成并下载 JSON 格式的密钥文件 (包含 Project ID, Client Email, Private Key)。2. 权限策略：分配 Compute Viewer 角色 (或全局 Viewer 角色)。3. 前提动作：必须在 GCP 控制台手动启用对应的 API (如 Compute Engine API)。","Compute Engine 实例, VPC Networks, Cloud Storage, Cloud SQL。"
 OCI(甲骨文云),"1. 凭证要求：需要 4 个极其特殊的参数：User OCID, Tenancy OCID, Fingerprint, 以及 PEM 格式的私钥。2. 权限策略：在目标 Compartment (区间) 分配对应的 Read 策略。","OCI Compute, VCN (虚拟云网络), Block Storage, Compartments。"
+
+
+コンピュート: Windows/Linux/Unixサーバ, ESXiホスト。
+
+ネットワーク機器: ルーター, スイッチ。
+
+セキュリティ・制御: ファイアウォール, ロードバランサ (F5等)。
+
+ストレージ: SAN/NAS ストレージアレイ。
+
+稼働中のソフトウェア: Webサーバ (IIS/Tomcat), データベース (Oracle/SQL Server)。
+
+周辺機器: ネットワークプリンタ, UPS。
