@@ -1,0 +1,8 @@
+# 指向你的 Azure MID Server
+backend:
+  - url: "wss://10.0.0.4:8043/ws/events"
+
+# 你的 MID Web Server API Key
+mid_secret: "wNykxwXdCeZTG88C8b3DHXDVEfXynjZ3"
+
+# (不填 Agent Name，让它自动抓取 Linux 测试机的主机名)
